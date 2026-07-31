@@ -50,24 +50,35 @@ async def start_dummy_server():
 
 
 def ask_boss(prompt_text: str) -> str:
-    try:
-        response = ai_client.models.generate_content(
-            model="gemini-1.5-flash-latest",
-            contents=prompt_text,
-            config=types.GenerateContentConfig(
-                system_instruction=SYSTEM_PROMPT,
-                temperature=0.7,
-            ),
-        )
-        return response.text
-    except Exception as e:
-        return f"【システムエラー】おい、AIサーバーの応答がないぞ！ ({e})"
+    # 無料枠で動く可能性のあるモデル候補を順番に試す
+    candidate_models = [
+        "gemini-2.0-flash",
+        "gemini-2.0-flash-lite-preview-02-05",
+        "gemini-1.5-flash-8b",
+    ]
+
+    last_error = None
+    for model_name in candidate_models:
+        try:
+            response = ai_client.models.generate_content(
+                model=model_name,
+                contents=prompt_text,
+                config=types.GenerateContentConfig(
+                    system_instruction=SYSTEM_PROMPT,
+                    temperature=0.7,
+                ),
+            )
+            return response.text
+        except Exception as e:
+            last_error = e
+            continue
+
+    return f"【システムエラー】おい、AIサーバーの応答がないぞ！ ({last_error})"
 
 
 @bot.event
 async def on_ready():
     print(f"鬼上司Bot ({bot.user.name}) が出社しました。")
-    # Render用にダミーサーバーを起動
     asyncio.create_task(start_dummy_server())
 
 
