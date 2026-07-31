@@ -52,7 +52,7 @@ async def start_dummy_server():
 def ask_boss(prompt_text: str) -> str:
     try:
         response = ai_client.models.generate_content(
-            model="gemini-1.5-flash",
+            model="gemini-1.5-flash-latest",
             contents=prompt_text,
             config=types.GenerateContentConfig(
                 system_instruction=SYSTEM_PROMPT,
